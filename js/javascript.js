@@ -6,33 +6,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const music = document.getElementById('bgMusic');
     const musicBtn = document.getElementById('musicToggle');
     const musicIcon = document.getElementById('musicIcon');
+    const sealBtn = document.getElementById('entrarBtn');
+    const wrapper = document.getElementById('wrapper');
+    const closeBtn = document.getElementById('closeBtn');
 
-    // --- 2. LÓGICA DE VIDEO Y EFECTOS DE CRISTAL ---
+    // --- 2. LÓGICA DE VIDEO (SOLO EFECTOS VISUALES) ---
     if (bgVideo) {
-        // CUANDO EL VIDEO INICIA: El pase y el pergamino se vuelven cristal
+        // Al iniciar el video: Efectos de cristal
         bgVideo.onplaying = function() {
             if (glassPass) glassPass.classList.add('pass-crystal');
             if (parchment) parchment.classList.add('parchment-crystal');
         };
 
-        // CUANDO EL VIDEO TERMINA: Todo vuelve a sólido y empieza la música
+        // Al terminar el video: Solo efectos visuales, NO MÚSICA
         bgVideo.onended = function() {
-            bgVideo.classList.add('video-ended'); // Se desvanece el video
+            bgVideo.classList.add('video-ended'); 
             if (glassPass) glassPass.classList.remove('pass-crystal');
             if (parchment) parchment.classList.remove('parchment-crystal');
-            
-            // La música inicia automáticamente al terminar el video
-            if (music && music.paused) {
-                music.play().catch(e => console.log("Audio esperando interacción"));
-                if (musicBtn) musicBtn.classList.add('visible');
-            }
+            // La música ya no inicia aquí para cumplir tu petición
         };
         
-        // Intento de reproducción automática (silenciada si es necesario por el navegador)
-        bgVideo.play().catch(e => console.log("Video en espera de clic para sonido"));
+        bgVideo.play().catch(e => console.log("Video en espera"));
     }
 
-    // --- 3. LEER NOMBRE Y PASES DEL LINK (?n=Nombre&p=2) ---
+    // --- 3. LEER NOMBRE Y PASES DEL LINK ---
     const urlParams = new URLSearchParams(window.location.search);
     const nombreInvitado = urlParams.get('n');
     const pasesInvitado = urlParams.get('p');
@@ -43,16 +40,13 @@ document.addEventListener('DOMContentLoaded', function() {
         displayNombre.innerText = nombreInvitado.replace(/_/g, ' ').toUpperCase();
     }
     if (displayPases) {
-        displayPases.innerText = pasesInvitado || "1"; // "1" por defecto
+        displayPases.innerText = pasesInvitado || "1";
     }
 
-    // --- 4. APERTURA CON CONFETI ---
-    const sealBtn = document.getElementById('entrarBtn');
-    const wrapper = document.getElementById('wrapper');
-
+    // --- 4. ACCIÓN DE ABRIR (MÚSICA INICIA AQUÍ) ---
     if (sealBtn && wrapper) {
         sealBtn.addEventListener('click', () => {
-            // Confeti en tonos azul y blanco
+            // Confeti azul y blanco
             confetti({
                 particleCount: 150,
                 spread: 70,
@@ -61,30 +55,31 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             setTimeout(() => {
-                wrapper.classList.add('open');
+                wrapper.classList.add('open'); 
                 document.body.style.overflow = 'auto';
-                // Si el video ya terminó, aseguramos que la música suene al entrar
+                
+                // LA MÚSICA INICIA ÚNICAMENTE AQUÍ
                 if (music && music.paused) {
-                    music.play();
+                    music.play().catch(err => console.log("Audio bloqueado:", err));
                     if (musicBtn) musicBtn.classList.add('visible');
+                    if (musicIcon) musicIcon.innerText = "🔊";
                 }
             }, 300);
         });
     }
 
     // --- 5. CIERRE Y PAUSA ---
-    const closeBtn = document.getElementById('closeBtn');
     if (closeBtn && wrapper) {
         closeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             wrapper.classList.remove('open');
             document.body.style.overflow = 'hidden';
-            if (music) music.pause();
+            if (music) music.pause(); // Pausa al cerrar la invitación
             setTimeout(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, 1500);
         });
     }
 
-    // --- 6. CONTROLES MANUALES (MÚSICA Y ACORDEÓN) ---
+    // --- 6. CONTROLES MANUALES ---
     if (musicBtn && music) {
         musicBtn.addEventListener('click', () => {
             if (music.paused) {
@@ -107,15 +102,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- 7. REINICIAR MÚSICA SI CAMBIA DE PESTAÑA ---
+    // --- 7. CONTROL INTELIGENTE (SALIR/ENTRAR DEL NAVEGADOR) ---
     document.addEventListener('visibilitychange', () => {
-        if (!document.hidden && wrapper.classList.contains('open') && music) {
-            music.play();
+        if (document.hidden) {
+            // Si sales del navegador o cambias pestaña: PAUSA
+            if (music) music.pause();
+        } else {
+            // Si regresas: Solo reanudamos si la invitación sigue abierta
+            if (wrapper.classList.contains('open') && music) {
+                music.play().catch(e => console.log("Reanudación automática"));
+                if (musicIcon) musicIcon.innerText = "🔊";
+            }
         }
     });
 
     iniciarReloj();
-}); // FIN DEL DOMContentLoaded
+}); 
 
 // --- 8. EL RELOJ ---
 function iniciarReloj() {
