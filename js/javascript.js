@@ -14,12 +14,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (bgVideo) {
         // Al iniciar el video: Efectos de cristal
         bgVideo.onplaying = function() {
+            document.body.classList.add('video-active'); // Activa el fondo negro
             if (glassPass) glassPass.classList.add('pass-crystal');
             if (parchment) parchment.classList.add('parchment-crystal');
         };
-
+        
         // Al terminar el video: Solo efectos visuales
         bgVideo.onended = function() {
+            document.body.classList.remove('video-active'); // Devuelve el fondo azul al terminar
             bgVideo.classList.add('video-ended'); 
             if (glassPass) glassPass.classList.remove('pass-crystal');
             if (parchment) parchment.classList.remove('parchment-crystal');
@@ -138,3 +140,4 @@ function iniciarReloj() {
         `;
     }, 1000);
 }
+
