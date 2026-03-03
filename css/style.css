@@ -1209,9 +1209,8 @@ body.video-active {
     background-image: none !important; /* Desactiva el degradado azul de forma temporal */
 }
 
-/* --- AJUSTE DE VIDEO A PANTALLA COMPLETA --- */
-.background-video-fade {
-    width: 100vw; /* El video ocupará el 100% del ancho de la ventana */
-    height: 100dvh; /* Usa Dynamic Viewport Height para adaptarse al tamaño real de cualquier celular */
-    object-fit: cover; /* El video se expande para llenar todo el espacio sin dejar huecos */
+/* Ocultamos las estrellas mientras el video esté activo para un negro perfecto */
+body.video-active .stars-layer {
+    opacity: 0 !important; 
+    transition: opacity 0.5s ease;
 }
