@@ -10,26 +10,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const wrapper = document.getElementById('wrapper');
     const closeBtn = document.getElementById('closeBtn');
 
-    // --- 2. LÓGICA DE VIDEO (SOLO EFECTOS VISUALES) ---
+    // --- 2. LÓGICA DE VIDEO: SINCRONIZACIÓN FORZADA DEL FONDO NEGRO ---
     if (bgVideo) {
-        // Al iniciar el video: Efectos de cristal
+        // 1. ACTIVAMOS EL MODO CINE DESDE EL INICIO (Evita el bug del fondo azul)
+        document.body.classList.add('video-active'); 
+
         bgVideo.onplaying = function() {
-            document.body.classList.add('video-active'); // Activa el fondo negro
+            // El video ya se está viendo: activamos los efectos de cristal
             if (glassPass) glassPass.classList.add('pass-crystal');
             if (parchment) parchment.classList.add('parchment-crystal');
         };
-        
-        // Al terminar el video: Solo efectos visuales
+
         bgVideo.onended = function() {
-            document.body.classList.remove('video-active'); // Devuelve el fondo azul al terminar
+            // EL VIDEO TERMINÓ: Regresamos al fondo azul de Cenicienta
+            document.body.classList.remove('video-active'); 
             bgVideo.classList.add('video-ended'); 
             if (glassPass) glassPass.classList.remove('pass-crystal');
             if (parchment) parchment.classList.remove('parchment-crystal');
         };
         
-        // Pequeño delay para asegurar carga en móviles y evitar fondo negro
+        // Intentamos reproducir el video
         setTimeout(() => {
-            bgVideo.play().catch(e => console.log("Video esperando interacción"));
+            bgVideo.play().catch(e => {
+                console.log("El navegador espera a que el usuario toque la pantalla para iniciar el video");
+                // Mantenemos el fondo negro para que, al dar 'Entrar', el video inicie sin parpadeos azules
+            });
         }, 100);
     }
 
@@ -140,4 +145,5 @@ function iniciarReloj() {
         `;
     }, 1000);
 }
+
 
