@@ -18,15 +18,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (parchment) parchment.classList.add('parchment-crystal');
         };
 
-        // Al terminar el video: Solo efectos visuales, NO MÚSICA
+        // Al terminar el video: Solo efectos visuales
         bgVideo.onended = function() {
             bgVideo.classList.add('video-ended'); 
             if (glassPass) glassPass.classList.remove('pass-crystal');
             if (parchment) parchment.classList.remove('parchment-crystal');
-            // La música ya no inicia aquí para cumplir tu petición
         };
         
-        bgVideo.play().catch(e => console.log("Video en espera"));
+        // Pequeño delay para asegurar carga en móviles y evitar fondo negro
+        setTimeout(() => {
+            bgVideo.play().catch(e => console.log("Video esperando interacción"));
+        }, 100);
     }
 
     // --- 3. LEER NOMBRE Y PASES DEL LINK ---
@@ -46,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 4. ACCIÓN DE ABRIR (MÚSICA INICIA AQUÍ) ---
     if (sealBtn && wrapper) {
         sealBtn.addEventListener('click', () => {
-            // Confeti azul y blanco
             confetti({
                 particleCount: 150,
                 spread: 70,
@@ -58,9 +59,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 wrapper.classList.add('open'); 
                 document.body.style.overflow = 'auto';
                 
-                // LA MÚSICA INICIA ÚNICAMENTE AQUÍ
                 if (music && music.paused) {
-                    music.play().catch(err => console.log("Audio bloqueado:", err));
+                    music.play().catch(err => console.log("Audio bloqueado"));
                     if (musicBtn) musicBtn.classList.add('visible');
                     if (musicIcon) musicIcon.innerText = "🔊";
                 }
@@ -74,24 +74,24 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             wrapper.classList.remove('open');
             document.body.style.overflow = 'hidden';
-            if (music) music.pause(); // Pausa al cerrar la invitación
+            if (music) music.pause();
             setTimeout(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, 1500);
         });
     }
 
-    // --- 6. CONTROLES MANUALES ---
-    if (musicBtn && music) {
-        musicBtn.addEventListener('click', () => {
-            if (music.paused) {
-                music.play();
-                musicIcon.innerText = "🔊";
-            } else {
-                music.pause();
-                musicIcon.innerText = "🔇";
+    // --- 6. CONTROL INTELIGENTE (SALIR/ENTRAR DEL NAVEGADOR) ---
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            if (music) music.pause();
+        } else {
+            if (wrapper.classList.contains('open') && music) {
+                music.play().catch(e => console.log("Reanudación automática"));
+                if (musicIcon) musicIcon.innerText = "🔊";
             }
-        });
-    }
+        }
+    });
 
+    // --- 7. ACORDEONES ---
     document.querySelectorAll('.accordion-header').forEach(header => {
         header.addEventListener('click', () => {
             const item = header.parentElement;
@@ -100,20 +100,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             item.classList.toggle('active');
         });
-    });
-
-    // --- 7. CONTROL INTELIGENTE (SALIR/ENTRAR DEL NAVEGADOR) ---
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            // Si sales del navegador o cambias pestaña: PAUSA
-            if (music) music.pause();
-        } else {
-            // Si regresas: Solo reanudamos si la invitación sigue abierta
-            if (wrapper.classList.contains('open') && music) {
-                music.play().catch(e => console.log("Reanudación automática"));
-                if (musicIcon) musicIcon.innerText = "🔊";
-            }
-        }
     });
 
     iniciarReloj();
